@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>دوروا — بدون اتصال</title>
+<style>
+  body { margin: 0; min-height: 100vh; display: grid; place-items: center; background: #f5f8fb; color: #16202a;
+         font-family: Vazirmatn, Tahoma, system-ui, sans-serif; text-align: center; padding: 1.5rem; }
+  .card { background: #fff; border: 1px solid #e2e8ee; border-radius: 1.25rem; padding: 2rem 1.5rem; max-width: 22rem; }
+  img { width: 72px; height: 72px; border-radius: 18px; }
+  h1 { font-size: 1.15rem; margin: 1rem 0 .5rem; }
+  p { color: #5d6b78; line-height: 1.8; margin: 0 0 1.25rem; font-size: .95rem; }
+  button { background: #0e76a8; color: #fff; border: 0; border-radius: 999px; padding: .6rem 1.4rem; font: inherit; cursor: pointer; }
+  .en { direction: ltr; font-size: .8rem; color: #8a97a3; margin-top: 1rem; }
+</style>
+</head>
+<body>
+  <div class="card">
+    <img src="/icons/icon-192.png" alt="">
+    <h1>اتصال اینترنت برقرار نیست</h1>
+    <p>پس از وصل شدن، صفحه را دوباره باز کنید.</p>
+    <button onclick="location.reload()">تلاش دوباره</button>
+    <p class="en">You are offline. Try again once you are connected.</p>
+  </div>
+</body>
+</html>

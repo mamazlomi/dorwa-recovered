@@ -1,0 +1,63 @@
+# Nightly logical backup of the Dorva Supabase database (free plan has no dashboard backups).
+# Needs one repository secret, added by the owner: SUPABASE_DB_URL
+#   = Session pooler connection string (Supabase › Project Settings › Database › Connection string › Session pooler)
+# Output: a private workflow artifact kept for 30 days (Actions › DB backup › run › Artifacts).
+# Storage files (uploaded images) are NOT included; only the database.
+name: DB backup
+
+on:
+  schedule:
+    - cron: "30 23 * * *"   # 03:00 Tehran
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+concurrency:
+  group: db-backup
+  cancel-in-progress: false
+
+jobs:
+  dump:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Check secret
+        env:
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+        run: |
+          if [ -z "$SUPABASE_DB_URL" ]; then
+            echo "::error::Secret SUPABASE_DB_URL is not set (Settings › Secrets and variables › Actions)."
+            exit 1
+          fi
+
+      - uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      - name: Dump roles, schema and data
+        env:
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+        run: |
+          set -euo pipefail
+          mkdir -p backup
+          supabase db dump --db-url "$SUPABASE_DB_URL" -f backup/roles.sql --role-only
+          supabase db dump --db-url "$SUPABASE_DB_URL" -f backup/schema.sql
+          supabase db dump --db-url "$SUPABASE_DB_URL" -f backup/data.sql --use-copy --data-only
+          ls -la backup
+          echo "Tables with data in this dump:"
+          grep -c '^COPY ' backup/data.sql || true
+          grep -E '^COPY "(auth"\."users|public"\."(pharmacies|orders))"' backup/data.sql || echo "::warning::auth.users / pharmacies / orders not found in data dump"
+
+      - name: Pack
+        run: |
+          stamp=$(TZ=Asia/Tehran date +%Y-%m-%d_%H%M)
+          echo "STAMP=$stamp" >> "$GITHUB_ENV"
+          tar -czf "dorva-db-$stamp.tar.gz" -C backup .
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dorva-db-${{ env.STAMP }}
+          path: dorva-db-${{ env.STAMP }}.tar.gz
+          retention-days: 30
+          if-no-files-found: error

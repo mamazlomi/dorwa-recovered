@@ -1,0 +1,136 @@
+import type { Locale } from "../config";
+
+// Catalog filter sidebar, active-filter chips, paging and the admin filter page.
+const fa = {
+  title: "فیلترها",
+  show: "نمایش فیلترها",
+  hide: "بستن فیلترها",
+  searchIn: (label: string) => `جستجو در ${label}`,
+  more: (n: string) => `${n} مورد دیگر`,
+  less: "نمایش کمتر",
+  noMatch: "موردی پیدا نشد",
+  clearAll: "پاک کردن همه",
+  remove: "حذف این فیلتر",
+  apply: "اعمال",
+  search: "جستجوی نام کالا یا ماده مؤثره",
+  city: "شهر",
+  allCities: "همه شهرها",
+  prev: "قبلی",
+  next: "بعدی",
+  page: (n: string, total: string) => `صفحه ${n} از ${total}`,
+  found: (n: string) => `${n} کالا`,
+  noResults: "کالایی با این فیلترها پیدا نشد.",
+  loadError: "بارگذاری کالاها با خطا روبه‌رو شد. چند لحظه بعد دوباره امتحان کنید.",
+  techNote: "مکمل‌ها و داروهای بدون نسخه پس از تایید مسئول فنی ارسال می‌شوند.",
+  // admin
+  tab: "فیلترها",
+  adminTitle: "فیلترهای فروشگاه",
+  adminIntro: "تعیین کنید کدام فیلترها کنار فهرست کالاها دیده شوند، با چه عنوانی و به چه ترتیبی. فقط مقادیری نمایش داده می‌شوند که دست‌کم یک کالا دارند.",
+  key: "کلید",
+  label: "عنوان",
+  enabled: "فعال",
+  sort: "ترتیب",
+  searchable: "جستجو در مقادیر",
+  counts: "نمایش تعداد",
+  scope: "محل نمایش",
+  scopes: { both: "دوروا و داروخانه", dorva: "فقط صفحه محصولات دوروا", pharmacy: "فقط صفحه داروخانه" } as Record<string, string>,
+  save: "ذخیره",
+  saved: "ذخیره شد.",
+  error: "ذخیره نشد.",
+  noEdit: "فقط کارکنان دارای مجوز «تغییر ستینگ‌های پلتفرم» می‌توانند تغییر دهند.",
+  values: (n: string) => `${n} مقدار در کاتالوگ`,
+};
+
+type Texts = typeof fa;
+
+const en: Texts = {
+  title: "Filters",
+  show: "Show filters",
+  hide: "Hide filters",
+  searchIn: (label) => `Search ${label}`,
+  more: (n) => `${n} more`,
+  less: "Show less",
+  noMatch: "No match",
+  clearAll: "Clear all",
+  remove: "Remove this filter",
+  apply: "Apply",
+  search: "Search product or active ingredient",
+  city: "City",
+  allCities: "All cities",
+  prev: "Previous",
+  next: "Next",
+  page: (n, total) => `Page ${n} of ${total}`,
+  found: (n) => `${n} products`,
+  noResults: "No products match these filters.",
+  loadError: "Products could not be loaded. Please try again shortly.",
+  techNote: "Supplements and OTC medicines are sent after the technical officer approves them.",
+  tab: "Filters",
+  adminTitle: "Store filters",
+  adminIntro: "Choose which filters appear beside product lists, their titles and order. Only values carried by at least one product are shown.",
+  key: "Key",
+  label: "Title",
+  enabled: "On",
+  sort: "Order",
+  searchable: "Search in values",
+  counts: "Show counts",
+  scope: "Shown on",
+  scopes: { both: "Dorva and pharmacy pages", dorva: "Dorva products page only", pharmacy: "Pharmacy page only" },
+  save: "Save",
+  saved: "Saved.",
+  error: "Not saved.",
+  noEdit: "Only staff with the platform settings permission can make changes.",
+  values: (n) => `${n} values in catalog`,
+};
+
+const ar: Texts = {
+  title: "التصفية",
+  show: "إظهار التصفية",
+  hide: "إخفاء التصفية",
+  searchIn: (label) => `ابحث في ${label}`,
+  more: (n) => `${n} أخرى`,
+  less: "عرض أقل",
+  noMatch: "لا نتائج",
+  clearAll: "مسح الكل",
+  remove: "إزالة هذا الفلتر",
+  apply: "تطبيق",
+  search: "ابحث عن المنتج أو المادة الفعالة",
+  city: "المدينة",
+  allCities: "كل المدن",
+  prev: "السابق",
+  next: "التالي",
+  page: (n, total) => `صفحة ${n} من ${total}`,
+  found: (n) => `${n} منتج`,
+  noResults: "لا توجد منتجات بهذه التصفية.",
+  loadError: "تعذر تحميل المنتجات. حاول مرة أخرى بعد قليل.",
+  techNote: "ترسل المكملات وأدوية دون وصفة بعد موافقة المسؤول الفني.",
+  tab: "التصفية",
+  adminTitle: "فلاتر المتجر",
+  adminIntro: "حدد الفلاتر التي تظهر بجانب قوائم المنتجات وعناوينها وترتيبها. تعرض فقط القيم التي لها منتج واحد على الأقل.",
+  key: "المفتاح",
+  label: "العنوان",
+  enabled: "مفعل",
+  sort: "الترتيب",
+  searchable: "البحث في القيم",
+  counts: "عرض العدد",
+  scope: "مكان العرض",
+  scopes: { both: "دوروا والصيدلية", dorva: "صفحة منتجات دوروا فقط", pharmacy: "صفحة الصيدلية فقط" },
+  save: "حفظ",
+  saved: "تم الحفظ.",
+  error: "لم يتم الحفظ.",
+  noEdit: "يمكن فقط للموظفين الذين لديهم صلاحية إعدادات المنصة إجراء تغييرات.",
+  values: (n) => `${n} قيمة في الكتالوج`,
+};
+
+const TEXTS: Record<Locale, Texts> = { fa, en, ar };
+export function getFilterTexts(locale: Locale): Texts {
+  return TEXTS[locale];
+}
+
+/** Serializable texts for the client-side filter sidebar. */
+export function sidebarTexts(locale: Locale) {
+  const f = TEXTS[locale];
+  return {
+    title: f.title, show: f.show, hide: f.hide, searchIn: f.searchIn("{x}"), more: f.more("{x}"),
+    less: f.less, noMatch: f.noMatch, apply: f.apply, city: f.city, allCities: f.allCities,
+  };
+}

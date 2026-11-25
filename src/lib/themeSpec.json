@@ -1,0 +1,429 @@
+{
+  "colors.primary": {
+    "t": "color"
+  },
+  "colors.highlight": {
+    "t": "color"
+  },
+  "colors.accent": {
+    "t": "color"
+  },
+  "colors.background": {
+    "t": "color"
+  },
+  "colors.surface": {
+    "t": "color"
+  },
+  "colors.text": {
+    "t": "color"
+  },
+  "colors.muted": {
+    "t": "color"
+  },
+  "colors.border": {
+    "t": "color"
+  },
+  "colors.sale": {
+    "t": "color"
+  },
+  "mode": {
+    "t": "enum",
+    "v": [
+      "light",
+      "dark"
+    ]
+  },
+  "font.body": {
+    "t": "enum",
+    "v": [
+      "vazirmatn",
+      "plex",
+      "kufi",
+      "readex",
+      "naskh"
+    ]
+  },
+  "font.heading": {
+    "t": "enum",
+    "v": [
+      "same",
+      "vazirmatn",
+      "plex",
+      "kufi",
+      "readex",
+      "lalezar"
+    ]
+  },
+  "font.size": {
+    "t": "num",
+    "min": 13,
+    "max": 18
+  },
+  "font.headingWeight": {
+    "t": "enum",
+    "v": [
+      "600",
+      "700",
+      "800",
+      "900"
+    ]
+  },
+  "shape.radius": {
+    "t": "num",
+    "min": 0,
+    "max": 28
+  },
+  "shape.button": {
+    "t": "enum",
+    "v": [
+      "solid",
+      "soft",
+      "outline",
+      "pill",
+      "gradient"
+    ]
+  },
+  "shape.shadow": {
+    "t": "enum",
+    "v": [
+      "none",
+      "soft",
+      "medium",
+      "strong"
+    ]
+  },
+  "shape.borders": {
+    "t": "bool"
+  },
+  "layout.width": {
+    "t": "num",
+    "min": 1024,
+    "max": 1600
+  },
+  "layout.density": {
+    "t": "enum",
+    "v": [
+      "compact",
+      "normal",
+      "spacious"
+    ]
+  },
+  "layout.background": {
+    "t": "enum",
+    "v": [
+      "plain",
+      "soft",
+      "dots",
+      "gradient"
+    ]
+  },
+  "logo.mode": {
+    "t": "enum",
+    "v": [
+      "image",
+      "text",
+      "both"
+    ]
+  },
+  "logo.height": {
+    "t": "num",
+    "min": 24,
+    "max": 64
+  },
+  "logo.image": {
+    "t": "image"
+  },
+  "logo.text": {
+    "t": "i18n",
+    "max": 30
+  },
+  "header.style": {
+    "t": "enum",
+    "v": [
+      "classic",
+      "compact",
+      "centered",
+      "stacked"
+    ]
+  },
+  "header.sticky": {
+    "t": "bool"
+  },
+  "header.deliverTo": {
+    "t": "bool"
+  },
+  "header.language": {
+    "t": "bool"
+  },
+  "header.categories": {
+    "t": "bool"
+  },
+  "header.finder": {
+    "t": "bool"
+  },
+  "header.announce.on": {
+    "t": "bool"
+  },
+  "header.announce.text": {
+    "t": "i18n",
+    "max": 160
+  },
+  "header.announce.link": {
+    "t": "path"
+  },
+  "header.announce.tone": {
+    "t": "enum",
+    "v": [
+      "brand",
+      "accent",
+      "dark",
+      "amber",
+      "rose"
+    ]
+  },
+  "footer.style": {
+    "t": "enum",
+    "v": [
+      "full",
+      "simple",
+      "minimal"
+    ]
+  },
+  "footer.features": {
+    "t": "bool"
+  },
+  "footer.about": {
+    "t": "i18n",
+    "max": 600
+  },
+  "footer.phone": {
+    "t": "text",
+    "max": 30
+  },
+  "footer.email": {
+    "t": "text",
+    "max": 80
+  },
+  "footer.address": {
+    "t": "i18n",
+    "max": 200
+  },
+  "footer.hours": {
+    "t": "i18n",
+    "max": 80
+  },
+  "footer.social.instagram": {
+    "t": "url"
+  },
+  "footer.social.telegram": {
+    "t": "url"
+  },
+  "footer.social.whatsapp": {
+    "t": "url"
+  },
+  "footer.social.linkedin": {
+    "t": "url"
+  },
+  "footer.social.aparat": {
+    "t": "url"
+  },
+  "footer.social.eitaa": {
+    "t": "url"
+  },
+  "footer.divider": {
+    "t": "enum",
+    "v": [
+      "none",
+      "wave",
+      "curve",
+      "bump",
+      "zigzag",
+      "tilt"
+    ]
+  },
+  "card.style": {
+    "t": "enum",
+    "v": [
+      "classic",
+      "minimal",
+      "bordered",
+      "compact",
+      "elevated"
+    ]
+  },
+  "card.image": {
+    "t": "enum",
+    "v": [
+      "square",
+      "portrait",
+      "landscape"
+    ]
+  },
+  "card.titleLines": {
+    "t": "num",
+    "min": 1,
+    "max": 3
+  },
+  "card.category": {
+    "t": "bool"
+  },
+  "card.pharmacies": {
+    "t": "bool"
+  },
+  "card.discount": {
+    "t": "bool"
+  },
+  "card.quickAdd": {
+    "t": "enum",
+    "v": [
+      "full",
+      "icon",
+      "none"
+    ]
+  },
+  "card.price": {
+    "t": "enum",
+    "v": [
+      "ink",
+      "brand",
+      "accent"
+    ]
+  },
+  "card.align": {
+    "t": "enum",
+    "v": [
+      "start",
+      "center"
+    ]
+  },
+  "grid.mobile": {
+    "t": "num",
+    "min": 1,
+    "max": 2
+  },
+  "grid.desktop": {
+    "t": "num",
+    "min": 2,
+    "max": 5
+  },
+  "grid.view": {
+    "t": "enum",
+    "v": [
+      "grid",
+      "list"
+    ]
+  },
+  "grid.toggle": {
+    "t": "bool"
+  },
+  "grid.filters": {
+    "t": "enum",
+    "v": [
+      "side",
+      "top"
+    ]
+  },
+  "rows.size": {
+    "t": "enum",
+    "v": [
+      "s",
+      "m",
+      "l"
+    ]
+  },
+  "rows.arrows": {
+    "t": "bool"
+  },
+  "product.layout": {
+    "t": "enum",
+    "v": [
+      "side",
+      "stacked",
+      "compact"
+    ]
+  },
+  "product.offers": {
+    "t": "enum",
+    "v": [
+      "list",
+      "cards",
+      "table"
+    ]
+  },
+  "product.specs": {
+    "t": "enum",
+    "v": [
+      "after",
+      "before"
+    ]
+  },
+  "product.stickyBuy": {
+    "t": "bool"
+  },
+  "pharmacy.hero": {
+    "t": "enum",
+    "v": [
+      "card",
+      "cover",
+      "minimal"
+    ]
+  },
+  "pharmacy.list": {
+    "t": "enum",
+    "v": [
+      "grid",
+      "list"
+    ]
+  },
+  "cart.summary": {
+    "t": "enum",
+    "v": [
+      "side",
+      "bottom"
+    ]
+  },
+  "extras.toTop": {
+    "t": "enum",
+    "v": [
+      "none",
+      "circle",
+      "square",
+      "pill",
+      "ring",
+      "tab"
+    ]
+  },
+  "extras.toTopSide": {
+    "t": "enum",
+    "v": [
+      "end",
+      "start",
+      "center"
+    ]
+  },
+  "extras.toBottom": {
+    "t": "bool"
+  },
+  "extras.progress": {
+    "t": "bool"
+  },
+  "app.bottomNav": {
+    "t": "enum",
+    "v": [
+      "off",
+      "mobile",
+      "app"
+    ]
+  },
+  "app.quickGrid": {
+    "t": "enum",
+    "v": [
+      "off",
+      "mobile",
+      "app"
+    ]
+  },
+  "app.install": {
+    "t": "bool"
+  }
+}

@@ -1,0 +1,85 @@
+import type { Locale } from "../config";
+
+// Pharmacy profile (editor, AI about-writer, public About tab) and Dorva's lists.
+type R = Record<string, string>;
+const fa = {
+  profileLink: "پروفایل داروخانه",
+  listsTab: "فهرست‌ها",
+  noAccessYet: "عضو این داروخانه هستید ولی مدیر هنوز دسترسی‌ای به شما نداده است. تا آن موقع پروفایل کاری خود را کامل کنید.",
+  title: "پروفایل داروخانه",
+  intro: "این اطلاعات در تب «درباره داروخانه» صفحه شما دیده می‌شود. فهرست بیمه‌ها و نوع داروخانه را دوروا در تنظیمات تعریف می‌کند.",
+  sec: { basic: "تماس و آدرس", location: "موقعیت روی نقشه", people: "مؤسس و مسئولان فنی", kinds: "نوع داروخانه و خدمات", hours: "ساعات کار", about: "معرفی داروخانه" } as R,
+  phone: "تلفن", address: "آدرس", founder: "نام مؤسس (صاحب پروانه)",
+  mapHint: "روی نقشه کلیک کنید یا نشانگر را بکشید؛ «موقعیت من» هم کار می‌کند.",
+  kinds: "نوع داروخانه", insurers: "بیمه‌های طرف قرارداد", services: "خدمات دیگری که در فهرست نیست (با Enter جدا کنید)", servicesPh: "مثلاً تزریقات، تست قند خون، ارسال رایگان",
+  always: "شبانه‌روزی (۲۴ ساعته)", shifts: "شیفت‌ها", addShift: "افزودن شیفت", from: "از", to: "تا", hoursNote: "توضیح (مثلاً تعطیل رسمی بسته است)",
+  days: ["شنبه", "یکشنبه", "دوشنبه", "سه‌شنبه", "چهارشنبه", "پنجشنبه", "جمعه"],
+  officers: "مسئولان فنی", addOfficer: "افزودن مسئول فنی", officerName: "نام و نام خانوادگی", council: "شماره نظام پزشکی",
+  officerBio: "معرفی برای بیماران", officerShifts: "حضور در داروخانه", remove: "حذف",
+  photo: "عکس (مربعی، حداقل ۴۰۰×۴۰۰)", upload: "بارگذاری عکس", uploading: "در حال بارگذاری…", uploadFail: "بارگذاری نشد (JPG/PNG/WebP تا ۲ مگابایت).",
+  aboutFa: "متن معرفی (فارسی)", aboutEn: "انگلیسی", aboutAr: "عربی", otherLangs: "انگلیسی و عربی",
+  ai: {
+    title: "نوشتن متن معرفی با هوش مصنوعی",
+    intro: "چند سؤال را تیک بزنید؛ متن بر اساس همین پاسخ‌ها، محله، ساعات کار، نوع داروخانه و بیمه‌ها نوشته می‌شود. متن پیشنهادی را قبل از ذخیره بخوانید و اصلاح کنید.",
+    goal: "تمرکز متن (چند مورد را انتخاب کنید)",
+    goals: { care: "خدمت‌رسانی و دسترسی آسان", consult: "مشاوره دارویی", rare: "داروهای کمیاب و خاص", beauty: "آرایشی، بهداشتی و مکمل", family: "سلامت خانواده و کودک", chronic: "همراهی بیماران مزمن", elderly: "مراقبت از سالمندان", sports: "ورزش و تناسب اندام", herbal: "گیاهی و طب سنتی", round_clock: "دسترسی شبانه‌روزی", insured: "نسخه‌های بیمه‌ای", community: "نقش اجتماعی در محله" } as R,
+    points: "نکاتی که باید گفته شود",
+    pointOpts: { experience: "سابقه طولانی", pharmacist: "حضور دائم داروساز", fast: "ارسال سریع", insurance: "پذیرش بیمه", parking: "دسترسی و پارکینگ آسان", genuine: "تضمین اصالت کالا", night: "خدمت در ساعات شب", free_consult: "مشاوره رایگان", team: "تیم چند داروساز", training: "آموزش مصرف درست دارو", access: "دسترسی ویلچر", cold: "نگهداری درست داروهای یخچالی" } as R,
+    tone: "لحن", tones: { formal: "رسمی", semi: "نیمه‌رسمی", friendly: "صمیمی و خودمانی" } as R,
+    length: "طول", lengths: { short: "کوتاه (۲ تا ۳ جمله)", medium: "متوسط (یک پاراگراف)", long: "بلند (دو پاراگراف)" } as R,
+    extra: "توضیح اضافه (اختیاری)", extraPh: "مثلاً از ۱۳۷۰ در همین محله هستیم",
+    generate: "بنویس", generating: "در حال نوشتن…", fail: "نوشته نشد؛ دوباره تلاش کنید یا خودتان بنویسید.", off: "هوش مصنوعی روی سایت فعال نیست.",
+    use: "جایگزین متن معرفی", append: "افزودن به انتهای متن",
+  },
+  save: "ذخیره پروفایل", saved: "پروفایل ذخیره شد.",
+  result: { location: "موقعیت روی نقشه انتخاب نشده یا خارج از ایران است.", hours: "یکی از شیفت‌ها کامل نیست (روز، ساعت شروع و پایان).", officer: "نام هر مسئول فنی لازم است و عکسش باید با همین فرم بارگذاری شود.", value: "یکی از مقادیر بیش از حد مجاز است.", forbidden: "اجازه ویرایش پروفایل این داروخانه را ندارید.", unknown: "ذخیره نشد." } as R,
+  viewPage: "دیدن صفحه",
+  // public page
+  tabProducts: "کالاها", tabAbout: "درباره داروخانه", openNow: "الان باز است", closedNow: "الان بسته است", alwaysOpen: "شبانه‌روزی",
+  founderLabel: "مؤسس", hoursTitle: "ساعات کار", officersTitle: "مسئولان فنی", councilLabel: "نظام پزشکی", insurersTitle: "بیمه‌ها",
+  servicesTitle: "خدمات", contactTitle: "تماس و آدرس", call: "تماس", route: "مسیریابی", noAbout: "این داروخانه هنوز متن معرفی ننوشته است.",
+  // Dorva lists
+  listsTitle: "فهرست‌های قابل تنظیم",
+  listsIntro: "این فهرست‌ها در ثبت‌نام و پروفایل داروخانه‌ها و صفحه «درباره داروخانه» استفاده می‌شوند. کد را بعد از استفاده تغییر ندهید؛ به‌جای حذف، غیرفعال کنید.",
+  listInsurers: "بیمه‌ها", listKinds: "نوع داروخانه", code: "کد (انگلیسی)", nameFa: "نام فارسی", nameEn: "انگلیسی", nameAr: "عربی", sort: "ترتیب", active: "فعال", add: "افزودن",
+  listResult: { ok: "ذخیره شد.", code: "کد فقط حروف کوچک انگلیسی، عدد و _ (۲ تا ۴۰).", name: "نام لازم است.", forbidden: "اجازه ندارید.", unknown: "ذخیره نشد." } as R,
+};
+export type ProfileTexts = typeof fa;
+
+const en: ProfileTexts = {
+  ...fa,
+  profileLink: "Pharmacy profile", listsTab: "Lists",
+  noAccessYet: "You are a member of this pharmacy but the manager has not given you any access yet. Meanwhile, complete your work profile.",
+  title: "Pharmacy profile", intro: "Shown in your page's About tab. Dorva defines the insurer and pharmacy-type lists in settings.",
+  sec: { basic: "Contact & address", location: "Location on the map", people: "Founder & pharmacists", kinds: "Pharmacy type & services", hours: "Opening hours", about: "About the pharmacy" },
+  phone: "Phone", address: "Address", founder: "Founder (licence holder)", mapHint: "Click the map or drag the pin; “My location” works too.",
+  kinds: "Pharmacy type", insurers: "Insurers accepted", services: "Other services (Enter to separate)", servicesPh: "e.g. injections, blood-sugar test, free delivery",
+  always: "Open 24 hours", shifts: "Shifts", addShift: "Add shift", from: "From", to: "To", hoursNote: "Note (e.g. closed on public holidays)",
+  days: ["Sat", "Sun", "Mon", "Tue", "Wed", "Thu", "Fri"],
+  officers: "Pharmacists in charge", addOfficer: "Add pharmacist", officerName: "Full name", council: "Medical council no.",
+  officerBio: "Short bio", officerShifts: "Hours present", remove: "Remove",
+  photo: "Photo (square, at least 400×400)", upload: "Upload photo", uploading: "Uploading…", uploadFail: "Upload failed (JPG/PNG/WebP up to 2 MB).",
+  aboutFa: "About text (Persian)", aboutEn: "English", aboutAr: "Arabic", otherLangs: "English and Arabic",
+  ai: { ...fa.ai, title: "Write the about text with AI", intro: "Tick a few answers; the text uses them plus the area, hours, type and insurers. Review it before saving.",
+    goal: "Focus (pick several)", goals: { care: "Service & easy access", consult: "Pharmaceutical advice", rare: "Rare & special medicines", beauty: "Beauty, care & supplements", family: "Family & child health", chronic: "Chronic-condition care", elderly: "Elderly care", sports: "Sport & fitness", herbal: "Herbal & traditional", round_clock: "24-hour access", insured: "Insured prescriptions", community: "Role in the neighbourhood" },
+    points: "Points to mention", pointOpts: { experience: "Long experience", pharmacist: "Pharmacist always present", fast: "Fast delivery", insurance: "Insurance accepted", parking: "Easy access & parking", genuine: "Genuine products", night: "Night service", free_consult: "Free advice", team: "Team of pharmacists", training: "Teaching correct medicine use", access: "Wheelchair access", cold: "Proper cold storage" },
+    tone: "Tone", tones: { formal: "Formal", semi: "Semi-formal", friendly: "Friendly" }, length: "Length",
+    lengths: { short: "Short (2–3 sentences)", medium: "Medium (one paragraph)", long: "Long (two paragraphs)" },
+    extra: "Extra notes (optional)", extraPh: "e.g. in this neighbourhood since 1991", generate: "Write", generating: "Writing…",
+    fail: "Could not write; try again or write it yourself.", off: "AI is not enabled on this site.", use: "Replace the about text", append: "Append to the text" },
+  save: "Save profile", saved: "Profile saved.",
+  result: { location: "Pick a location in Iran on the map.", hours: "A shift is incomplete (day, start and end).", officer: "Each pharmacist needs a name; upload photos with this form.", value: "A value is too long.", forbidden: "You may not edit this profile.", unknown: "Not saved." },
+  viewPage: "View page",
+  tabProducts: "Products", tabAbout: "About", openNow: "Open now", closedNow: "Closed now", alwaysOpen: "24 hours",
+  founderLabel: "Founder", hoursTitle: "Opening hours", officersTitle: "Pharmacists in charge", councilLabel: "Council no.", insurersTitle: "Insurers",
+  servicesTitle: "Services", contactTitle: "Contact & address", call: "Call", route: "Directions", noAbout: "No about text yet.",
+  listsTitle: "Editable lists", listsIntro: "Used in pharmacy sign-up, profiles and About pages. Do not change a code once used; deactivate instead of deleting.",
+  listInsurers: "Insurers", listKinds: "Pharmacy types", code: "Code", nameFa: "Persian name", nameEn: "English", nameAr: "Arabic", sort: "Order", active: "Active", add: "Add",
+  listResult: { ok: "Saved.", code: "Code: lowercase letters, digits and _ (2–40).", name: "A name is required.", forbidden: "Not allowed.", unknown: "Not saved." },
+};
+const ar: ProfileTexts = { ...en, tabProducts: "المنتجات", tabAbout: "عن الصيدلية", openNow: "مفتوح الآن", closedNow: "مغلق الآن", alwaysOpen: "على مدار الساعة",
+  hoursTitle: "ساعات العمل", officersTitle: "الصيادلة المسؤولون", insurersTitle: "التأمينات", servicesTitle: "الخدمات", contactTitle: "الاتصال والعنوان",
+  call: "اتصال", route: "الاتجاهات", founderLabel: "المؤسس", councilLabel: "رقم النقابة",
+  days: ["السبت", "الأحد", "الاثنين", "الثلاثاء", "الأربعاء", "الخميس", "الجمعة"], noAbout: "لا يوجد نص تعريفي بعد." };
+const TEXTS: Record<Locale, ProfileTexts> = { fa, en, ar };
+export const getProfileTexts = (l: Locale) => TEXTS[l];

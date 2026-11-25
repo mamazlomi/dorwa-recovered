@@ -1,0 +1,121 @@
+@import "tailwindcss";
+
+/* Defaults. The theme studio overrides these variables per theme (layout.tsx). */
+@theme {
+  --color-brand-50: #edf5fa;
+  --color-brand-100: #d7e9f2;
+  --color-brand-200: #aed1e3;
+  --color-brand-400: #1fbedb;
+  --color-brand-500: #2b86b3;
+  --color-brand-600: #0e76a8;
+  --color-brand-700: #0c618a;
+  --color-brand-800: #094d6d;
+  --color-accent-50: #f2edfe;
+  --color-accent-100: #e3d8fd;
+  --color-accent-600: #6b3af7;
+  --color-accent-700: #562ec6;
+  --color-ink: #16202a;
+  --color-muted: #5d6b78;
+  --color-line: #e2e8ee;
+  --color-paper: #f5f8fb;
+  --color-surface: #ffffff;
+  --color-sale: #dc2626;
+  --font-sans: var(--font-vazirmatn), system-ui, sans-serif;
+}
+
+:root {
+  --page-width: 1320px; --radius: 16px; --radius-sm: 10px; --shadow: none; --border-w: 1px;
+  --density: 1; --font-size: 15px; --heading-weight: 800; --logo-h: 32px;
+}
+html { background: var(--color-paper); color: var(--color-ink); font-size: var(--font-size); }
+body { font-family: var(--font-sans); }
+
+/* ---------- fonts (loaded on demand; the theme picks one) */
+html[data-font="plex"] body { font-family: var(--font-plex), system-ui, sans-serif; }
+html[data-font="kufi"] body { font-family: var(--font-kufi), system-ui, sans-serif; }
+html[data-font="readex"] body { font-family: var(--font-readex), system-ui, sans-serif; }
+html[data-font="naskh"] body { font-family: var(--font-naskh), serif; }
+h1, h2, h3, .section-title { font-weight: var(--heading-weight); }
+html[data-heading="vazirmatn"] :is(h1, h2, h3, .section-title) { font-family: var(--font-vazirmatn), sans-serif; }
+html[data-heading="plex"] :is(h1, h2, h3, .section-title) { font-family: var(--font-plex), sans-serif; }
+html[data-heading="kufi"] :is(h1, h2, h3, .section-title) { font-family: var(--font-kufi), sans-serif; }
+html[data-heading="readex"] :is(h1, h2, h3, .section-title) { font-family: var(--font-readex), sans-serif; }
+html[data-heading="lalezar"] :is(h1, h2, .section-title) { font-family: var(--font-lalezar), sans-serif; font-weight: 400; letter-spacing: 0; }
+
+/* ---------- page background */
+html[data-bg="soft"] body { background: linear-gradient(180deg, var(--color-brand-50), var(--color-paper) 420px); }
+html[data-bg="dots"] body { background-image: radial-gradient(var(--color-brand-100) 1px, transparent 1px); background-size: 18px 18px; }
+html[data-bg="gradient"] body { background: radial-gradient(1200px 500px at 85% -10%, var(--color-accent-50), transparent),
+  radial-gradient(900px 500px at 0% 0%, var(--color-brand-50), transparent), var(--color-paper); }
+
+@layer components {
+/* ---------- building blocks */
+.wrap { width: 100%; max-width: var(--page-width); margin-inline: auto; padding-inline: 1rem; }
+.card {
+  background: var(--color-surface); border: var(--border-w) solid var(--color-line); border-radius: var(--radius);
+  box-shadow: var(--shadow); padding: calc(1.25rem * var(--density));
+}
+.btn { @apply inline-flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-semibold transition disabled:opacity-50;
+  border-radius: var(--radius-sm); background: var(--color-brand-600); color: #fff; border: 1px solid transparent; }
+.btn:hover { background: var(--color-brand-700); }
+.btn-ghost { @apply inline-flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-semibold transition;
+  border-radius: var(--radius-sm); border: 1px solid var(--color-line); background: var(--color-surface); color: var(--color-ink); }
+.btn-ghost:hover { background: var(--color-brand-50); }
+html[data-button="soft"] .btn { background: var(--color-brand-100); color: var(--color-brand-800); }
+html[data-button="soft"] .btn:hover { background: var(--color-brand-200); }
+html[data-button="outline"] .btn { background: transparent; color: var(--color-brand-700); border-color: var(--color-brand-600); }
+html[data-button="outline"] .btn:hover { background: var(--color-brand-600); color: #fff; }
+html[data-button="pill"] :is(.btn, .btn-ghost) { border-radius: 999px; }
+html[data-button="gradient"] .btn { background: linear-gradient(90deg, var(--color-brand-600), var(--color-accent-600)); border: 0; }
+html[data-button="gradient"] .btn:hover { filter: brightness(1.08); }
+.input { @apply w-full px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-brand-100;
+  border-radius: var(--radius-sm); border: 1px solid var(--color-line); background: var(--color-surface); color: var(--color-ink); }
+.input:focus { border-color: var(--color-brand-500); }
+.label { @apply mb-1.5 block text-sm font-medium; color: var(--color-ink); }
+.chip { @apply inline-flex items-center rounded-full bg-brand-50 px-2.5 py-1 text-xs font-medium text-brand-700; }
+.section-title { @apply text-lg text-accent-600; }
+.text-sale { color: var(--color-sale); }
+.no-scrollbar { scrollbar-width: none; }
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.line-clamp-1-3 { display: -webkit-box; -webkit-box-orient: vertical; overflow: hidden; -webkit-line-clamp: var(--title-lines, 2); }
+
+/* ---------- product card styles (ProductCard) */
+.pcard { position: relative; display: flex; flex-direction: column; background: var(--color-surface);
+  border: var(--border-w) solid var(--color-line); border-radius: var(--radius); box-shadow: var(--shadow);
+  padding: calc(0.85rem * var(--density)); transition: box-shadow .15s, border-color .15s, transform .15s; }
+.pcard:hover { border-color: var(--color-brand-500); }
+.pcard[data-style="minimal"] { border-color: transparent; box-shadow: none; background: transparent; padding-inline: 0; }
+.pcard[data-style="minimal"]:hover { border-color: transparent; }
+.pcard[data-style="bordered"] { border-width: 2px; }
+.pcard[data-style="compact"] { padding: calc(0.55rem * var(--density)); }
+.pcard[data-style="elevated"] { border-color: transparent; box-shadow: 0 2px 6px rgb(15 23 42 / .06), 0 10px 28px rgb(15 23 42 / .08); }
+.pcard[data-style="elevated"]:hover { transform: translateY(-2px); }
+
+}
+
+/* ---------- dark mode: surfaces and the few light Tailwind tints the site uses */
+html[data-mode="dark"] { color-scheme: dark;
+  --color-gray-50: #1b2530; --color-gray-100: #223040; --color-slate-100: #223040; --color-slate-700: #cbd5e1;
+  --color-amber-50: #33290f; --color-amber-100: #3d3112; --color-amber-200: #5c4a1a; --color-amber-800: #fcd34d; --color-amber-900: #fde68a; --color-amber-950: #fef3c7;
+  --color-red-50: #3a1717; --color-red-700: #fca5a5; --color-red-800: #fca5a5; --color-red-900: #fecaca;
+  --color-emerald-50: #10291f; --color-sky-50: #0f2533; --color-rose-50: #331522; }
+html[data-mode="dark"] :is(.bg-white, .bg-white\/95) { background-color: var(--color-surface); }
+html[data-mode="dark"] .text-white { color: #fff; }
+
+/* ---- round 4: shapes, bands, back-to-top, installed app ---- */
+body { overflow-x: clip; }
+.shape-tilt { clip-path: polygon(0 0, 100% 0, 100% 86%, 0 100%); }
+.shape-wave {
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' preserveAspectRatio='none'%3E%3Cpath d='M0 0H100V88C80 100 70 78 50 88S20 100 0 88Z'/%3E%3C/svg%3E") 0 0 / 100% 100% no-repeat;
+          mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' preserveAspectRatio='none'%3E%3Cpath d='M0 0H100V88C80 100 70 78 50 88S20 100 0 88Z'/%3E%3C/svg%3E") 0 0 / 100% 100% no-repeat;
+  border-radius: 1.5rem 1.5rem 0 0;
+}
+.on-band .section-title, .on-band .band-text, .on-band > .relative > section > h2 { color: #fff; }
+/* shown only when Dorva runs as an installed app (home-screen icon) */
+.app-only { display: none; }
+@media (display-mode: standalone) { .app-only { display: revert; } .browser-only { display: none !important; } }
+/* room for the bottom navigation bar on phones */
+html[data-bottomnav="mobile"] body, html[data-bottomnav="app"].is-app body { padding-bottom: calc(4rem + env(safe-area-inset-bottom)); }
+@media (min-width: 768px) { html[data-bottomnav] body { padding-bottom: 0 !important; } }
+@media (display-mode: standalone) { html[data-bottomnav="app"] body { padding-bottom: calc(4rem + env(safe-area-inset-bottom)); } }
+@media (prefers-reduced-motion: no-preference) { html { scroll-behavior: smooth; } }
