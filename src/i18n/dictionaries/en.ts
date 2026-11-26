@@ -77,7 +77,7 @@ const en: Dict = {
     password: "Password",
     submit: "Log in",
     linkTitle: "Log in with an email link",
-    linkBody: "No password? We will email you a login link. SMS login is coming in the next version.",
+    linkBody: "No password? We will email you a login link.",
     sendLink: "Send login link",
     sent: "Login link sent. Open your inbox (and spam folder) in this same browser.",
     errors: {

@@ -58,4 +58,5 @@ echo "seed: seed.sql"
 "${PSQL[@]}" -d dorva_test -f "$ROOT/supabase/tests/112_notification_tests.sql" 2>&1 | sed 's/^psql:[^ ]* NOTICE:  //'
 "${PSQL[@]}" -d dorva_test -f "$ROOT/supabase/tests/113_catalog_sync_tests.sql" 2>&1 | sed 's/^psql:[^ ]* NOTICE:  //'
 "${PSQL[@]}" -d dorva_test -f "$ROOT/supabase/tests/114_product_admin_tests.sql" 2>&1 | sed 's/^psql:[^ ]* NOTICE:  //'
+"${PSQL[@]}" -d dorva_test -f "$ROOT/supabase/tests/115_consult_tests.sql" 2>&1 | sed 's/^psql:[^ ]* NOTICE:  //'
 [ -n "${DBG:-}" ] && "${PSQL[@]}" -d dorva_test -f "$DBG"

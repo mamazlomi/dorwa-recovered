@@ -1,3 +1,4 @@
+import { getConsultTexts } from "@/i18n/dictionaries/consult";
 import type { Metadata, Viewport } from "next";
 import { IBM_Plex_Sans_Arabic, Lalezar, Noto_Kufi_Arabic, Noto_Naskh_Arabic, Readex_Pro, Vazirmatn } from "next/font/google";
 import Link from "next/link";
@@ -168,6 +169,7 @@ async function Header({ locale, theme }: { locale: Locale; theme: Theme }) {
       {tabs.map((x) => <Link key={x.slug} href={`/${locale}/products?col=${x.slug}`} className={navLink}>{titleOf(x.title, locale)}</Link>)}
       {H.finder && <Link href={`/${locale}/finder`} className={navLink}>{L.finder}</Link>}
       <Link href={`/${locale}/pharmacies`} className={navLink}>{L.pharmacies}</Link>
+      <Link href={`/${locale}/forum`} className={navLink}>{getConsultTexts(locale).nav}</Link>
     </>
   );
   const lang = H.language && <Suspense fallback={null}><LanguageSwitcher current={locale} label={t.nav.language} /></Suspense>;
@@ -272,6 +274,8 @@ function Footer({ locale, theme }: { locale: Locale; theme: Theme }) {
             <Link className={a} href={`/${locale}/products?col=all`}>{L.allProducts}</Link>
             <Link className={a} href={`/${locale}/finder`}>{L.finder}</Link>
             <Link className={a} href={`/${locale}/pharmacies`}>{L.pharmacies}</Link>
+            <Link className={a} href={`/${locale}/forum`}>{getConsultTexts(locale).nav}</Link>
+            <Link className={a} href={`/${locale}/magazine`}>{getConsultTexts(locale).magazine}</Link>
             <Link className={a} href={`/${locale}/pharmacy/register`}>{F.registerPharmacy}</Link>
             {C.phone && <a className={a} href={`tel:${C.phone.replace(/[^\d+]/g, "")}`} dir="ltr">{C.phone}</a>}
           </nav>

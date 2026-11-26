@@ -18,15 +18,16 @@ import { getSeoTexts } from "@/i18n/dictionaries/seo";
 import { getNotifyTexts } from "@/i18n/dictionaries/notify";
 import { getCatalogSyncTexts } from "@/i18n/dictionaries/catalogSync";
 import { getSnapshotTexts } from "@/i18n/dictionaries/snapshots";
+import { getConsultTexts } from "@/i18n/dictionaries/consult";
 
-type Tab = "dashboard" | "pharmacies" | "settings" | "discounts" | "filters" | "collections" | "shipping" | "complements" | "staff" | "finder" | "pages" | "theme" | "lists" | "prices" | "codes" | "pharmacists" | "inbox" | "seo" | "notifications" | "catalog" | "snapshots";
+type Tab = "dashboard" | "pharmacies" | "settings" | "discounts" | "filters" | "collections" | "shipping" | "complements" | "staff" | "finder" | "pages" | "theme" | "lists" | "prices" | "codes" | "pharmacists" | "inbox" | "seo" | "notifications" | "catalog" | "snapshots" | "consult";
 
 // a tab shows only to people holding one of these permissions (the pages check again)
 const NEEDS: Record<Tab, string[]> = {
   dashboard: [], pharmacies: ["pharmacy.read_all", "pharmacy.approve"], settings: ["settings.manage", "pharmacy.read_all"],
   theme: ["theme.manage"], pages: ["pages.manage"], discounts: ["policy.manage"], filters: ["settings.manage", "pharmacy.read_all"],
   collections: ["collections.manage", "pharmacy.read_all"], finder: ["finder.manage", "pharmacy.read_all"], complements: ["collections.manage"],
-  shipping: ["settings.manage", "pharmacy.read_all"], staff: ["platform.roles.manage"], lists: ["settings.manage"], prices: ["catalog.publish", "policy.manage"], codes: ["catalog.publish"], pharmacists: ["pharmacy.read_all"], inbox: [], seo: ["settings.manage"], notifications: ["settings.manage"], catalog: ["settings.manage", "catalog.publish"], snapshots: ["settings.manage"],
+  shipping: ["settings.manage", "pharmacy.read_all"], staff: ["platform.roles.manage"], lists: ["settings.manage"], prices: ["catalog.publish", "policy.manage"], codes: ["catalog.publish"], pharmacists: ["pharmacy.read_all"], inbox: [], seo: ["settings.manage"], notifications: ["settings.manage"], catalog: ["settings.manage", "catalog.publish"], snapshots: ["settings.manage"], consult: ["consult.manage"],
 };
 
 export async function AdminTabs({ locale, current, labels }: {
@@ -69,6 +70,7 @@ export async function AdminTabs({ locale, current, labels }: {
       {tab("snapshots", getSnapshotTexts(l).tab)}
       {tab("settings", labels.tabSettings)}
       {tab("notifications", getNotifyTexts(l).admin.tab)}
+      {tab("consult", getConsultTexts(l).adminTab)}
       {tab("seo", getSeoTexts(l).tab)}
       {tab("theme", getStudioTexts(l).title)}
       {tab("pages", getPageTexts(l).adminTab)}
