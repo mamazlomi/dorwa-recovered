@@ -4,99 +4,107 @@ import { revalidatePath } from "next/cache";
 import { ErrorBox, SetupNotice } from "@/components/SetupNotice";
 import { SubmitButton } from "@/components/SubmitButton";
 import { isLocale, resolveLocale } from "@/i18n";
+import { getForumTexts } from "@/i18n/dictionaries/forum";
 import { getConsultTexts } from "@/i18n/dictionaries/consult";
+import { getReviewerTexts } from "@/i18n/dictionaries/reviewers";
 import { isConfigured } from "@/lib/config";
 import { createClient, getUser } from "@/lib/supabase/server";
 
 export const dynamic = "force-dynamic";
+type P = { reviewer_name: string | null; reviewer_specialty: string | null; id: string; parent_id: string | null; author_id: string; title: string | null; body: string; category: string; review_state: string; review_note: string | null; reviewed_by: string | null; created_at: string };
+type E = { user_id: string; display_name: string };
 
-type Q = { id: string; title: string; body: string; topic: string; is_public: boolean; status: string; created_at: string; asker_id: string };
-type A = { id: string; author_id: string; body: string; verified: boolean; created_at: string };
-type E = { user_id: string; display_name: string; specialty: string; bio: string | null };
-
-async function answer(fd: FormData) {
+async function comment(fd: FormData) {
   "use server";
   const raw = String(fd.get("locale") ?? "fa");
   const locale = isLocale(raw) ? raw : "fa";
   const id = String(fd.get("id") ?? "");
-  const supabase = await createClient();
-  const { error } = await supabase.from("consult_answers").insert({ question_id: id, body: String(fd.get("body") ?? "").trim().slice(0, 3000) });
+  const { supabase, user } = await getUser();
+  if (!user) redirect(`/${locale}/login?next=/${locale}/forum/${id}`);
+  const { error } = await supabase.from("forum_posts").insert({ parent_id: id, body: String(fd.get("body") ?? "").trim().slice(0, 3000) });
   revalidatePath(`/${locale}/forum/${id}`);
-  redirect(`/${locale}/forum/${id}${error ? "?e=1" : ""}`);
+  redirect(`/${locale}/forum/${id}${error ? `?e=${error.code === "P0001" ? "limit" : "failed"}` : ""}`);
 }
 
-export async function generateMetadata({ params }: { params: Promise<{ locale: string; id: string }> }) {
+export async function generateMetadata({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const supabase = await createClient();
-  const { data } = await supabase.from("consult_questions").select("title, is_public").eq("id", id).maybeSingle();
-  // private questions are never indexed
-  return { title: data?.title ?? "—", robots: data?.is_public ? undefined : { index: false } };
+  if (!/^[0-9a-f-]{36}$/i.test(id)) return {};
+  const { data } = await (await createClient()).from("forum_posts").select("title").eq("id", id).maybeSingle();
+  return { title: data?.title ?? "—" };
 }
 
-export default async function QuestionPage({ params, searchParams }: {
+function ReviewBox({ p, F, locale }: { p: P; F: ReturnType<typeof getForumTexts>; locale: "fa" | "en" | "ar" }) {
+  if (p.review_state === "not_needed") return null;
+  if (p.review_state === "pending") return <p className="text-xs text-muted">⏳ {F.review.pending}</p>;
+  const spec = p.reviewer_specialty === "staff" ? getReviewerTexts(locale).staffTitle : p.reviewer_specialty ? getConsultTexts(locale).specialties[p.reviewer_specialty] ?? "" : "";
+  return (
+    <div className={`rounded-lg border p-3 text-sm ${p.review_state === "verified" ? "border-green-300 bg-green-50" : "border-blue-300 bg-blue-50"}`} lang={locale}>
+      <b>{p.review_state === "verified" ? "✓ " : "ℹ "}{F.review[p.review_state]}</b>
+      {p.reviewer_name && <span className="text-muted"> — {F.reviewedBy} <b className="text-foreground">{p.reviewer_name}</b>{spec ? ` (${spec})` : ""}</span>}
+      {p.review_note && <p className="mt-1 whitespace-pre-line leading-7">{p.review_note}</p>}
+    </div>
+  );
+}
+
+export default async function ThreadPage({ params, searchParams }: {
   params: Promise<{ locale: string; id: string }>; searchParams: Promise<{ e?: string }>;
 }) {
   const { locale, t } = await resolveLocale(params);
   if (!isConfigured) return <SetupNotice title={t.common.setupTitle} body={t.common.setupBody} />;
   const { id } = await params;
   if (!/^[0-9a-f-]{36}$/i.test(id)) notFound();
-  const C = getConsultTexts(locale);
+  const F = getForumTexts(locale);
   const sp = await searchParams;
   const { supabase, user } = await getUser();
 
-  const { data: qd } = await supabase.from("consult_questions").select("id, title, body, topic, is_public, status, created_at, asker_id").eq("id", id).maybeSingle();
-  const q = qd as Q | null;
-  if (!q) notFound();
-  const { data: ad } = await supabase.from("consult_answers").select("id, author_id, body, verified, created_at").eq("question_id", id).eq("status", "visible").order("created_at");
-  const answers = (ad as A[] | null) ?? [];
-  const ids = [...new Set(answers.map((a) => a.author_id)), ...(user ? [user.id] : [])];
-  const { data: ed } = ids.length ? await supabase.from("consult_experts").select("user_id, display_name, specialty, bio").in("user_id", ids).eq("status", "approved") : { data: [] };
-  const experts = new Map(((ed as E[] | null) ?? []).map((e) => [e.user_id, e]));
-  const iAmExpert = Boolean(user && experts.has(user.id));
+  const { data: th } = await supabase.from("forum_posts").select("id, parent_id, author_id, title, body, category, review_state, review_note, reviewed_by, reviewer_name, reviewer_specialty, created_at").eq("id", id).is("parent_id", null).maybeSingle();
+  const thread = th as P | null;
+  if (!thread) notFound();
+  const { data: cd } = await supabase.from("forum_posts").select("id, parent_id, author_id, title, body, category, review_state, review_note, reviewed_by, reviewer_name, reviewer_specialty, created_at").eq("parent_id", id).eq("status", "visible").order("created_at");
+  const comments = (cd as P[] | null) ?? [];
+  const ids = [...new Set([thread, ...comments].flatMap((p) => [p.author_id, p.reviewed_by].filter(Boolean) as string[]))];
+  const { data: ed } = ids.length ? await supabase.from("consult_experts").select("user_id, display_name").in("user_id", ids).eq("status", "approved") : { data: [] };
+  const experts = new Map(((ed as E[] | null) ?? []).map((e) => [e.user_id, e.display_name]));
   const df = new Intl.DateTimeFormat(locale === "fa" ? "fa-IR" : locale === "ar" ? "ar" : "en-US", { dateStyle: "medium" });
 
   return (
     <div className="mx-auto max-w-3xl space-y-5">
-      <Link href={`/${locale}/forum`} className="text-sm text-brand-700 underline">{C.back}</Link>
-      <article className="card space-y-2">
-        <h1 className="text-xl font-extrabold">{q.title}</h1>
-        <div className="flex flex-wrap gap-2 text-xs text-muted">
-          <span>{C.topics[q.topic] ?? q.topic}</span><span>·</span><span>{df.format(new Date(q.created_at))}</span>
-          {!q.is_public && <span className="rounded-full bg-amber-100 px-2 py-0.5 text-amber-800">{C.private}</span>}
-        </div>
-        <p className="whitespace-pre-line leading-8">{q.body}</p>
+      <Link href={`/${locale}/forum`} className="text-sm text-brand-700 underline">{F.back}</Link>
+      <article className="card space-y-3">
+        <h1 className="text-xl font-extrabold">{thread.title}</h1>
+        <div className="text-xs text-muted">{F.categories[thread.category] ?? thread.category} · {df.format(new Date(thread.created_at))}</div>
+        <p className="whitespace-pre-line leading-8">{thread.body}</p>
+        <ReviewBox p={thread} F={F} locale={locale} />
       </article>
-      <p className="text-xs text-muted">{C.disclaimer}</p>
+      <p className="text-xs text-muted">{F.disclaimer}</p>
 
       <section className="space-y-3">
-        <h2 className="font-bold">{C.answers}</h2>
-        {sp.e && <ErrorBox message={C.failed} />}
-        {answers.length === 0 && <p className="card text-muted">{C.noAnswers}</p>}
-        {answers.map((a) => {
-          const e = experts.get(a.author_id);
+        <h2 className="font-bold">{F.commentsTitle}</h2>
+        {sp.e && <ErrorBox message={sp.e === "limit" ? F.limit : F.failed} />}
+        {comments.length === 0 && <p className="card text-muted">{F.noComments}</p>}
+        {comments.map((c) => {
+          const name = experts.get(c.author_id);
           return (
-            <div key={a.id} className={`card space-y-2 ${a.verified ? "border-green-300 bg-green-50/50" : ""}`}>
-              <div className="flex flex-wrap items-center gap-2 text-sm">
-                <b>{e?.display_name ?? "—"}</b>
-                {e && <span className="text-muted">{C.specialties[e.specialty] ?? e.specialty}</span>}
-                {a.verified && <span className="rounded-full bg-green-100 px-2 py-0.5 text-xs font-bold text-green-800">✓ {C.verified}</span>}
-                <span className="ms-auto text-xs text-muted">{df.format(new Date(a.created_at))}</span>
+            <div key={c.id} className="card space-y-2">
+              <div className="flex items-center gap-2 text-xs text-muted">
+                {name && <span className="rounded-full bg-brand-100 px-2 py-0.5 font-bold text-brand-800">{F.expertBadge}: {name}</span>}
+                <span className="ms-auto">{df.format(new Date(c.created_at))}</span>
               </div>
-              <p className="whitespace-pre-line leading-8">{a.body}</p>
+              <p className="whitespace-pre-line leading-8">{c.body}</p>
+              <ReviewBox p={c} F={F} locale={locale} />
             </div>
           );
         })}
       </section>
 
-      {iAmExpert && (
-        <form action={answer} className="card space-y-3">
-          <input type="hidden" name="locale" value={locale} />
-          <input type="hidden" name="id" value={q.id} />
-          <label className="label" htmlFor="ans">{C.yourAnswer}</label>
-          <textarea id="ans" name="body" required minLength={10} maxLength={3000} rows={6} className="input" />
-          <SubmitButton className="btn w-full">{C.sendAnswer}</SubmitButton>
+      {user ? (
+        <form action={comment} className="card space-y-3">
+          <input type="hidden" name="locale" value={locale} /><input type="hidden" name="id" value={thread.id} />
+          <label className="label" htmlFor="cm">{F.yourComment}</label>
+          <textarea id="cm" name="body" required minLength={5} maxLength={3000} rows={4} className="input" />
+          <SubmitButton className="btn w-full">{F.sendComment}</SubmitButton>
         </form>
-      )}
+      ) : <Link className="btn" href={`/${locale}/login?next=/${locale}/forum/${thread.id}`}>{F.loginToPost}</Link>}
     </div>
   );
 }

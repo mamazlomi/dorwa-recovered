@@ -26,6 +26,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ...entry("/products", undefined, 0.9, "daily"),
     ...entry("/pharmacies", undefined, 0.8, "daily"),
     ...entry("/finder", undefined, 0.7, "daily"),
+    ...entry("/consult", undefined, 0.6, "daily"),
     ...entry("/forum", undefined, 0.6, "daily"),
     ...entry("/magazine", undefined, 0.6, "weekly"),
     ...entry("/about", undefined, 0.4, "monthly"),

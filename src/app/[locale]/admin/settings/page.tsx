@@ -7,6 +7,7 @@ import { AdminTabs } from "@/components/AdminTabs";
 import { ErrorBox, OkBox, SetupNotice } from "@/components/SetupNotice";
 import { formatNumber, isLocale, resolveLocale, type Locale } from "@/i18n";
 import { getRules } from "@/i18n/dictionaries/rules";
+import { getReviewerTexts } from "@/i18n/dictionaries/reviewers";
 import { isConfigured } from "@/lib/config";
 import { createClient, getUser } from "@/lib/supabase/server";
 
@@ -27,6 +28,7 @@ async function updateSetting(formData: FormData) {
   const raw = String(formData.get("locale") ?? "fa");
   const locale = isLocale(raw) ? raw : "fa";
   const key = String(formData.get("key"));
+  const tabQ = String(formData.get("tab") ?? "").replace(/[^a-z]/g, "");
   const type = String(formData.get("type"));
   let value: unknown;
   if (type === "number") value = Number(String(formData.get("value") ?? "").replace(/[٫,]/g, "."));
@@ -50,7 +52,7 @@ async function updateSetting(formData: FormData) {
     ok = !error && (data?.length ?? 0) > 0;
   }
   revalidatePath(`/${locale}/admin/settings`);
-  redirect(`/${locale}/admin/settings?${ok ? "saved" : "error"}=${encodeURIComponent(key)}#${encodeURIComponent(key)}`);
+  redirect(`/${locale}/admin/settings?${tabQ ? `tab=${tabQ}&` : ""}${ok ? "saved" : "error"}=${encodeURIComponent(key)}#${encodeURIComponent(key)}`);
 }
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }) {
@@ -60,7 +62,7 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
 
 export default async function AdminSettings({ params, searchParams }: {
   params: Promise<{ locale: string }>;
-  searchParams: Promise<{ saved?: string; error?: string }>;
+  searchParams: Promise<{ saved?: string; error?: string; tab?: string }>;
 }) {
   const { locale, t } = await resolveLocale(params);
   const a = { ...t.admin, ...getRules(locale) };
@@ -91,7 +93,17 @@ export default async function AdminSettings({ params, searchParams }: {
   const MOVED = ["theme.primary", "theme.highlight", "theme.accent", "theme.logo", "theme.page_width", "pages.pharmacy_approval", "theme.pharmacy_approval"];
   const defs = ((defsData as Definition[]) ?? []).filter((d) => !MOVED.includes(d.key));
   const values = new Map(((valuesData as { key: string; value: unknown }[]) ?? []).map((r) => [r.key, r.value]));
-  const groups = [...new Set(defs.map((d) => d.group_code))];
+  const RT = getReviewerTexts(locale);
+  const CAT_OF: Record<string, string> = {
+    allocation: "orders", cart: "orders", prescription: "orders", payment: "orders", delivery: "orders", shipping: "orders", holding: "orders", customer: "orders",
+    catalog: "catalog", catalog_sync: "catalog", enrich: "catalog", finder: "catalog", map: "catalog",
+    pharmacy: "pharmacies", moderation: "pharmacies", forum: "community", review: "community", expert: "community",
+    notify: "comms", seo: "comms", theme: "look",
+  };
+  const catOf = (g: string) => CAT_OF[g] ?? "other";
+  const catKeys = ["orders", "catalog", "pharmacies", "community", "comms", "look", "other"].filter((c) => defs.some((d) => catOf(d.group_code) === c));
+  const tab = catKeys.includes(sp.tab ?? "") ? sp.tab! : catKeys[0];
+  const groups = [...new Set(defs.map((d) => d.group_code))].filter((g) => catOf(g) === tab);
 
   return (
     <div>
@@ -99,11 +111,19 @@ export default async function AdminSettings({ params, searchParams }: {
       <h1 className="mb-2 text-2xl font-extrabold">{a.settingsTitle}</h1>
       <p className="mb-6 max-w-3xl text-sm text-muted">{a.settingsIntro}</p>
       {!canEdit && <p className="mb-4 text-sm text-amber-800">{a.noSettingsAccess}</p>}
+      <nav className="-mx-4 mb-6 flex gap-2 overflow-x-auto px-4 md:mx-0 md:flex-wrap md:px-0" aria-label="settings sections">
+        {catKeys.map((c) => (
+          <Link key={c} href={`/${locale}/admin/settings?tab=${c}`} aria-current={c === tab ? "page" : undefined}
+            className={`shrink-0 whitespace-nowrap rounded-full px-4 py-2 text-sm ${c === tab ? "bg-brand-700 font-bold text-white" : "border border-line bg-surface hover:bg-brand-50"}`}>
+            {RT.tabs[c]}
+          </Link>
+        ))}
+      </nav>
 
       <div className="space-y-8">
         {groups.map((g) => (
           <section key={g}>
-            <h2 className="mb-3 text-lg font-bold">{a.groups[g] ?? g}</h2>
+            <h2 className="mb-3 text-lg font-bold">{a.groups[g] ?? RT.groups[g] ?? g}</h2>
             {g === "theme" && (
               <p className="mb-3 text-sm text-muted">
                 {getLookTexts(locale).admin.themeHint}{" "}
@@ -119,6 +139,7 @@ export default async function AdminSettings({ params, searchParams }: {
                   <form key={d.key} id={d.key} action={updateSetting} className="card space-y-2">
                     <input type="hidden" name="locale" value={locale} />
                     <input type="hidden" name="key" value={d.key} />
+                    <input type="hidden" name="tab" value={tab} />
                     <input type="hidden" name="type" value={d.value_type} />
                     <label className="block font-semibold" htmlFor={`v-${d.key}`}>{tr(d.label, locale)}</label>
                     {d.help && <p className="text-xs leading-6 text-muted">{tr(d.help, locale)}</p>}

@@ -3,110 +3,113 @@ import { redirect } from "next/navigation";
 import { ErrorBox, SetupNotice } from "@/components/SetupNotice";
 import { SubmitButton } from "@/components/SubmitButton";
 import { formatNumber, isLocale, resolveLocale } from "@/i18n";
-import { getConsultTexts } from "@/i18n/dictionaries/consult";
+import { getForumTexts } from "@/i18n/dictionaries/forum";
 import { isConfigured } from "@/lib/config";
 import { pageMeta } from "@/lib/seo";
-import { createClient, getUser } from "@/lib/supabase/server";
+import { getUser } from "@/lib/supabase/server";
 
 export const dynamic = "force-dynamic";
-
-type Q = { id: string; title: string; topic: string; status: string; is_public: boolean; created_at: string };
-const TOPICS = ["general", "drug", "pregnancy", "child", "skin", "supplement", "elderly", "other"];
+type Th = { id: string; title: string; body: string; category: string; review_state: string; created_at: string };
+const CATS = ["general", "drug", "pregnancy", "child", "skin", "supplement", "elderly", "nutrition", "mental", "other"];
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await resolveLocale(params);
-  const C = getConsultTexts(locale);
-  return pageMeta({ locale, path: "/forum", title: C.forumTitle, description: C.forumIntro });
+  const F = getForumTexts(locale);
+  return pageMeta({ locale, path: "/forum", title: F.title, description: F.intro });
 }
 
-async function askQuestion(fd: FormData) {
+async function newThread(fd: FormData) {
   "use server";
   const raw = String(fd.get("locale") ?? "fa");
   const locale = isLocale(raw) ? raw : "fa";
   const { supabase, user } = await getUser();
   if (!user) redirect(`/${locale}/login?next=/${locale}/forum`);
-  const topic = TOPICS.includes(String(fd.get("topic"))) ? String(fd.get("topic")) : "general";
-  const { data, error } = await supabase.from("consult_questions").insert({
+  const category = CATS.includes(String(fd.get("category"))) ? String(fd.get("category")) : "general";
+  const { data, error } = await supabase.from("forum_posts").insert({
     title: String(fd.get("title") ?? "").trim().slice(0, 140),
-    body: String(fd.get("body") ?? "").trim().slice(0, 2000),
-    topic, is_public: fd.get("public") === "on",
+    body: String(fd.get("body") ?? "").trim().slice(0, 3000), category,
   }).select("id").single();
   if (error || !data) redirect(`/${locale}/forum?e=${error?.code === "P0001" ? "limit" : "failed"}`);
   redirect(`/${locale}/forum/${data.id}`);
 }
 
 export default async function ForumPage({ params, searchParams }: {
-  params: Promise<{ locale: string }>; searchParams: Promise<{ topic?: string; e?: string }>;
+  params: Promise<{ locale: string }>; searchParams: Promise<{ cat?: string; e?: string }>;
 }) {
   const { locale, t } = await resolveLocale(params);
   if (!isConfigured) return <SetupNotice title={t.common.setupTitle} body={t.common.setupBody} />;
-  const C = getConsultTexts(locale);
+  const F = getForumTexts(locale);
   const sp = await searchParams;
-  const topic = TOPICS.includes(sp.topic ?? "") ? sp.topic! : "";
+  const cat = CATS.includes(sp.cat ?? "") ? sp.cat! : "";
   const { supabase, user } = await getUser();
 
-  let query = supabase.from("consult_questions").select("id, title, topic, status, is_public, created_at")
-    .eq("is_public", true).in("status", ["open", "answered"]).order("created_at", { ascending: false }).limit(40);
-  if (topic) query = query.eq("topic", topic);
-  const { data } = await query;
-  const list = (data as Q[] | null) ?? [];
-  const { data: counts } = list.length ? await supabase.rpc("consult_answer_counts", { p_ids: list.map((q) => q.id) }) : { data: [] };
-  const cnt = new Map(((counts as { question_id: string; answers: number; verified: number }[] | null) ?? []).map((c) => [c.question_id, c]));
+  let canReview = false;
+  if (user) {
+    const [{ data: perms }, { data: me }] = await Promise.all([
+      supabase.rpc("my_platform_permissions"),
+      supabase.from("consult_experts").select("status").eq("user_id", user.id).eq("status", "approved").maybeSingle(),
+    ]);
+    canReview = Boolean(me) || ((perms as string[] | null) ?? []).includes("consult.manage");
+  }
+  let q = supabase.from("forum_posts").select("id, title, body, category, review_state, created_at")
+    .is("parent_id", null).eq("status", "visible").order("created_at", { ascending: false }).limit(40);
+  if (cat) q = q.eq("category", cat);
+  const { data } = await q;
+  const list = (data as Th[] | null) ?? [];
+  const { data: cc } = list.length ? await supabase.rpc("forum_comment_counts", { p_ids: list.map((x) => x.id) }) : { data: [] };
+  const cnt = new Map(((cc as { thread_id: string; comments: number; reviewed: number }[] | null) ?? []).map((c) => [c.thread_id, c]));
   const df = new Intl.DateTimeFormat(locale === "fa" ? "fa-IR" : locale === "ar" ? "ar" : "en-US", { dateStyle: "medium" });
 
   return (
     <div className="mx-auto max-w-3xl space-y-5">
       <section className="card bg-gradient-to-l from-brand-50 to-white">
-        <h1 className="mb-2 text-2xl font-extrabold">{C.forumTitle}</h1>
-        <p className="text-sm leading-7 text-muted">{C.forumIntro}</p>
-        <p className="mt-2 text-xs text-muted">{C.disclaimer}</p>
-        <div className="mt-3 flex flex-wrap gap-3 text-sm">
-          <Link className="text-brand-700 underline" href={`/${locale}/forum/consultant`}>{C.becomeLink}</Link>
-          <Link className="text-brand-700 underline" href={`/${locale}/magazine`}>{C.magazine}</Link>
+        <h1 className="mb-2 text-2xl font-extrabold">{F.title}</h1>
+        <p className="text-sm leading-7 text-muted">{F.intro}</p>
+        <p className="mt-2 text-xs text-muted">{F.disclaimer}</p>
+        <div className="mt-3 flex flex-wrap gap-4 text-sm">
+          <Link className="text-brand-700 underline" href={`/${locale}/consult`}>{F.consultLink}</Link>
+          {canReview && <Link className="text-brand-700 underline" href={`/${locale}/forum/review`}>{F.admin.queue}</Link>}
         </div>
       </section>
 
       <section className="card space-y-3">
-        <h2 className="font-bold">{C.askTitle}</h2>
-        {sp.e && <ErrorBox message={sp.e === "limit" ? C.limit : C.failed} />}
+        <h2 className="font-bold">{F.newThread}</h2>
+        {sp.e && <ErrorBox message={sp.e === "limit" ? F.limit : F.failed} />}
         {user ? (
-          <form action={askQuestion} className="space-y-3">
+          <form action={newThread} className="space-y-3">
             <input type="hidden" name="locale" value={locale} />
-            <div><label className="label" htmlFor="q-title">{C.titleLabel}</label>
-              <input id="q-title" name="title" required minLength={5} maxLength={140} className="input" /></div>
-            <div><label className="label" htmlFor="q-body">{C.bodyLabel}</label>
-              <textarea id="q-body" name="body" required minLength={10} maxLength={2000} rows={5} className="input" /></div>
-            <div><label className="label" htmlFor="q-topic">{C.topic}</label>
-              <select id="q-topic" name="topic" className="input">{TOPICS.map((k) => <option key={k} value={k}>{C.topics[k]}</option>)}</select></div>
-            <label className="flex items-start gap-2 text-sm"><input type="checkbox" name="public" className="mt-1" /> <span>{C.makePublic}</span></label>
-            <p className="text-xs text-muted">{C.privateNote}</p>
-            <SubmitButton className="btn w-full">{C.ask}</SubmitButton>
+            <div><label className="label" htmlFor="f-title">{F.threadTitle}</label>
+              <input id="f-title" name="title" required minLength={5} maxLength={140} className="input" /></div>
+            <div><label className="label" htmlFor="f-body">{F.threadBody}</label>
+              <textarea id="f-body" name="body" required minLength={5} maxLength={3000} rows={4} className="input" /></div>
+            <div><label className="label" htmlFor="f-cat">{F.category}</label>
+              <select id="f-cat" name="category" className="input">{CATS.map((k) => <option key={k} value={k}>{F.categories[k]}</option>)}</select></div>
+            <SubmitButton className="btn w-full">{F.post}</SubmitButton>
           </form>
-        ) : (
-          <Link className="btn" href={`/${locale}/login?next=/${locale}/forum`}>{C.loginToAsk}</Link>
-        )}
+        ) : <Link className="btn" href={`/${locale}/login?next=/${locale}/forum`}>{F.loginToPost}</Link>}
       </section>
 
       <form method="get" className="flex gap-2">
-        <select name="topic" defaultValue={topic} aria-label={C.topic} className="input">
-          <option value="">{C.all}</option>
-          {TOPICS.map((k) => <option key={k} value={k}>{C.topics[k]}</option>)}
+        <select name="cat" defaultValue={cat} aria-label={F.category} className="input">
+          <option value="">{F.all}</option>{CATS.map((k) => <option key={k} value={k}>{F.categories[k]}</option>)}
         </select>
-        <button className="btn-ghost">{C.filter}</button>
+        <button className="btn-ghost">{F.filter}</button>
       </form>
 
-      {list.length === 0 ? <p className="card text-center text-muted">{C.empty}</p> : (
+      {list.length === 0 ? <p className="card text-center text-muted">{F.empty}</p> : (
         <ul className="space-y-2">
-          {list.map((q) => {
-            const c = cnt.get(q.id);
+          {list.map((x) => {
+            const c = cnt.get(x.id);
+            const badge = F.review[x.review_state];
             return (
-              <li key={q.id}>
-                <Link href={`/${locale}/forum/${q.id}`} className="card block hover:bg-brand-50">
-                  <div className="font-bold">{q.title}</div>
-                  <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-muted">
-                    <span>{C.topics[q.topic] ?? q.topic}</span><span>·</span><span>{df.format(new Date(q.created_at))}</span><span>·</span>
-                    <span>{c ? `${formatNumber(c.answers, locale)} ${C.answersN}` : C.unanswered}</span>
-                    {c && c.verified > 0 && <span className="rounded-full bg-green-100 px-2 py-0.5 font-bold text-green-800">✓ {C.verified}</span>}
+              <li key={x.id}>
+                <Link href={`/${locale}/forum/${x.id}`} className="card block hover:bg-brand-50">
+                  <div className="font-bold">{x.title}</div>
+                  <p className="mt-1 line-clamp-2 text-sm text-muted">{x.body}</p>
+                  <div className="mt-2 flex flex-wrap items-center gap-2 text-xs text-muted">
+                    <span>{F.categories[x.category] ?? x.category}</span><span>·</span><span>{df.format(new Date(x.created_at))}</span><span>·</span>
+                    <span>{formatNumber(c?.comments ?? 0, locale)} {F.comments}</span>
+                    {badge && x.review_state !== "pending" && <span className="rounded-full bg-green-100 px-2 py-0.5 font-bold text-green-800">✓ {badge}</span>}
                   </div>
                 </Link>
               </li>

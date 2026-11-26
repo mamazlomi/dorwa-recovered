@@ -92,7 +92,7 @@ begin
     new.status := 'open';
     if new.asker_id is null then raise exception 'sign in first' using errcode = '42501'; end if;
     if (select count(*) from public.consult_questions
-        where asker_id = new.asker_id and created_at > now() - interval '1 day') >= 10 then
+        where asker_id = new.asker_id and created_at > now() - interval '1 day') >= greatest(app.setting_num('consult.questions_per_day', 10), 1)::int then
       raise exception 'daily question limit reached' using errcode = 'P0001';
     end if;
     return new;

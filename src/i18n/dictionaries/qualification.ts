@@ -1,0 +1,82 @@
+import type { Locale } from "../config";
+
+// Qualification of reviewers, monitoring, warnings, audit.
+const fa = {
+  applyNote: "داروسازی که مسئول فنی تاییدشده‌ی یک داروخانه‌ی فعال دوروا است، با ثبت درخواست بلافاصله پذیرفته می‌شود. بقیه (از جمله مشتریان و کارمندان داروخانه) پس از بررسی مدارک توسط دوروا پذیرفته می‌شوند. متخصصان بر اساس تاخیر و درستی بررسی‌ها نظارت می‌شوند و در صورت تکرار مشکل ممکن است متوقف شوند.",
+  tab: "صلاحیت و نظارت", title: "صلاحیت و نظارت بر متخصصان",
+  intro: "عضو بودن در دوروا (مشتری یا کارمند داروخانه) به‌تنهایی صلاحیت بررسی نمی‌دهد. داروساز تاییدشده (مسئول فنی فعال با شماره‌ی نظام) یک بار تایید می‌شود و همیشه صلاحیت دارد؛ بقیه را شما با ثبت مبنای تایید می‌پذیرید. تاخیر و بازبینی نادرست شمرده می‌شود و ممکن است به توقف بینجامد.",
+  settingsLink: "سقف‌ها و سیاست توقف خودکار", reviewLink: "صف بررسی",
+  pending: "درخواست‌های در انتظار", active: "متخصصان فعال", stopped: "متوقف یا حذف‌شده", none: "موردی نیست.",
+  eligible: "داروساز تاییدشده — مبنا لازم نیست", notEligible: "مسئول فنی تاییدشده نیست؛ مبنای تایید را بنویسید",
+  basisLabel: "مبنای تایید (پروانه، مدرک، سابقه…)", reasonLabel: "دلیل / بازخورد (متخصص می‌بیند)", internalLabel: "یادداشت داخلی (فقط کارکنان)",
+  daysLabel: "روز", license: "پروانه", applied: "ثبت‌نام", basis: { granted: "تایید دستی دوروا", pharmacist_verified: "داروساز تاییدشده" } as Record<string, string>,
+  stats: "تاخیر / نادرست / تایید خوب", reviews30: "بررسی ۳۰ روز", avgMin: "میانگین دقیقه",
+  until: "تا", reason: "دلیل",
+  act: { approve: "پذیرش", reject: "رد درخواست", warn: "ثبت هشدار", pause: "توقف موقت", suspend: "تعلیق", reinstate: "بازگرداندن", remove: "حذف از متخصصان" } as Record<string, string>,
+  status: { pending: "در انتظار", approved: "فعال", paused: "متوقف موقت", suspended: "تعلیق", removed: "حذف‌شده" } as Record<string, string>,
+  res: { ok: "انجام شد.", state: "در این وضعیت ممکن نیست.", reason: "دلیل را بنویسید (دست‌کم ۵ حرف).", basis: "برای این فرد مبنای تایید لازم است.", dup: "این مورد قبلاً حسابرسی شده.", note: "برای نظر نادرست یا نامشخص توضیح بنویسید.", missing: "مورد پیدا نشد.", forbidden: "دسترسی ندارید." } as Record<string, string>,
+  history: "تاریخچه", historyOpen: "نمایش تاریخچه", auto: "خودکار",
+  ev: { applied: "درخواست", approved: "پذیرش", rejected: "رد", suspended: "تعلیق", paused: "توقف", reinstated: "بازگشت", removed: "حذف", warning: "هشدار", late: "تاخیر", wrong: "نادرست", unclear: "نامشخص", good: "تایید خوب" } as Record<string, string>,
+  audit: { title: "حسابرسی نمونه‌ای", intro: "چند بررسی یا پاسخ اخیر را تصادفی ببینید و درستی آن را ثبت کنید. «نادرست» نظر را به صف برمی‌گرداند، اعتبار پرداخت‌نشده‌اش را باطل می‌کند و یک امتیاز منفی ثبت می‌کند.",
+    good: "درست بود", unclear: "نامشخص", wrong: "نادرست", note: "توضیح برای متخصص", empty: "موردی برای حسابرسی نیست.", forum: "نظر فروم", answer: "پاسخ مشاوره", by: "بررسی‌شده توسط", reload: "نمونه‌ی تازه" },
+  me: {
+    title: "وضعیت و بازخورد من", late: "تاخیر", wrong: "نظر نادرست", inWindow: "در {d} روز اخیر", limit: "سقف",
+    approved: "صلاحیت شما تایید است.", pending: "درخواست شما در انتظار بررسی دوروا است. تا تایید، امکان بررسی ندارید.",
+    paused: "دسترسی شما موقتاً متوقف است.", suspended: "دسترسی شما تا بررسی دوروا متوقف است.", removed: "دسترسی شما به‌عنوان متخصص برداشته شده است.",
+    feedback: "بازخوردها", none: "هنوز بازخوردی ندارید.", back: "برگشت خودکار", contact: "اگر فکر می‌کنید اشتباه شده، با پشتیبانی دوروا تماس بگیرید.",
+    pharm: "داروساز تاییدشده؛ صلاحیت شما ثابت است.",
+  },
+};
+type T = typeof fa;
+const en: T = {
+  applyNote: "A pharmacist who is the verified technical officer of an active Dorva pharmacy is accepted the moment they apply. Everyone else (customers and pharmacy staff included) is accepted after Dorva checks their credentials. Specialists are monitored for delays and accuracy and may be paused if problems repeat.",
+  tab: "Qualification & oversight", title: "Specialist qualification and oversight",
+  intro: "Being a Dorva member (customer or pharmacy staff) does not qualify anyone to review. A verified pharmacist (active technical officer with a council number) is qualified once and stays qualified; everyone else you accept with a written basis. Late claims and wrong reviews are counted and can lead to a pause.",
+  settingsLink: "Limits and automatic pause policy", reviewLink: "Review queue",
+  pending: "Waiting applications", active: "Active specialists", stopped: "Paused or removed", none: "Nothing here.",
+  eligible: "Verified pharmacist — no basis needed", notEligible: "Not a verified technical officer; write the basis for acceptance",
+  basisLabel: "Basis (licence, credential, experience…)", reasonLabel: "Reason / feedback (the specialist sees it)", internalLabel: "Internal note (staff only)",
+  daysLabel: "days", license: "Licence", applied: "Applied", basis: { granted: "Accepted by Dorva", pharmacist_verified: "Verified pharmacist" },
+  stats: "Late / wrong / good", reviews30: "Reviews, 30 days", avgMin: "Avg minutes", until: "until", reason: "Reason",
+  act: { approve: "Accept", reject: "Reject", warn: "Record warning", pause: "Pause", suspend: "Suspend", reinstate: "Reinstate", remove: "Remove" },
+  status: { pending: "Pending", approved: "Active", paused: "Paused", suspended: "Suspended", removed: "Removed" },
+  res: { ok: "Done.", state: "Not possible in this state.", reason: "Write a reason (5+ characters).", basis: "A basis is required for this person.", dup: "Already audited.", note: "Explain wrong or unclear verdicts.", missing: "Not found.", forbidden: "No access." },
+  history: "History", historyOpen: "Show history", auto: "automatic",
+  ev: { applied: "Applied", approved: "Accepted", rejected: "Rejected", suspended: "Suspended", paused: "Paused", reinstated: "Reinstated", removed: "Removed", warning: "Warning", late: "Late", wrong: "Wrong", unclear: "Unclear", good: "Good" },
+  audit: { title: "Sample audit", intro: "See a few recent reviews or answers at random and record whether they were right. “Wrong” reopens the post, voids its unpaid credit and counts a strike.",
+    good: "Correct", unclear: "Unclear", wrong: "Wrong", note: "Explanation for the specialist", empty: "Nothing to audit.", forum: "Forum post", answer: "Consultation answer", by: "Reviewed by", reload: "New sample" },
+  me: {
+    title: "My status and feedback", late: "Late", wrong: "Wrong reviews", inWindow: "in the last {d} days", limit: "limit",
+    approved: "Your qualification is confirmed.", pending: "Your application is waiting for Dorva. You cannot review until it is accepted.",
+    paused: "Your access is paused for now.", suspended: "Your access is suspended until Dorva reviews it.", removed: "Your specialist access has been withdrawn.",
+    feedback: "Feedback", none: "No feedback yet.", back: "Returns automatically", contact: "If you think this is a mistake, contact Dorva support.",
+    pharm: "Verified pharmacist; your qualification is permanent.",
+  },
+};
+const ar: T = {
+  applyNote: "الصيدلي الذي هو المسؤول الفني الموثق لصيدلية نشطة في دوروا يُقبل فور التقديم. أما الآخرون (العملاء وموظفو الصيدليات) فيُقبلون بعد فحص دوروا لمؤهلاتهم. يخضع المتخصصون للمراقبة من حيث التأخير والدقة وقد يُوقفون عند تكرار المشاكل.",
+  tab: "الأهلية والمراقبة", title: "أهلية المتخصصين والمراقبة",
+  intro: "العضوية في دوروا (عميل أو موظف صيدلية) لا تمنح أهلية المراجعة. الصيدلي الموثق (مسؤول فني نشط برقم نقابة) يُقبل مرة واحدة ويبقى مؤهلاً؛ وغيره تقبلونه بتسجيل الأساس. يُحتسب التأخير والمراجعة الخاطئة وقد يؤديان إلى الإيقاف.",
+  settingsLink: "الحدود وسياسة الإيقاف التلقائي", reviewLink: "قائمة المراجعة",
+  pending: "طلبات بالانتظار", active: "المتخصصون الفعالون", stopped: "موقوفون أو محذوفون", none: "لا شيء.",
+  eligible: "صيدلي موثق — لا حاجة لأساس", notEligible: "ليس مسؤولاً فنياً موثقاً؛ اكتب أساس القبول",
+  basisLabel: "الأساس (ترخيص، شهادة، خبرة…)", reasonLabel: "السبب / الملاحظات (يراها المتخصص)", internalLabel: "ملاحظة داخلية (للموظفين)",
+  daysLabel: "يوم", license: "الترخيص", applied: "التسجيل", basis: { granted: "قبول دوروا", pharmacist_verified: "صيدلي موثق" },
+  stats: "تأخير / خطأ / جيد", reviews30: "مراجعات 30 يوماً", avgMin: "متوسط الدقائق", until: "حتى", reason: "السبب",
+  act: { approve: "قبول", reject: "رفض", warn: "تسجيل تحذير", pause: "إيقاف مؤقت", suspend: "تعليق", reinstate: "إعادة", remove: "حذف" },
+  status: { pending: "بالانتظار", approved: "فعال", paused: "موقوف مؤقتاً", suspended: "معلق", removed: "محذوف" },
+  res: { ok: "تم.", state: "غير ممكن في هذه الحالة.", reason: "اكتب السبب (5 أحرف على الأقل).", basis: "يلزم أساس لهذا الشخص.", dup: "تم تدقيقه سابقاً.", note: "اشرح الحكم الخاطئ أو غير الواضح.", missing: "غير موجود.", forbidden: "لا صلاحية." },
+  history: "السجل", historyOpen: "عرض السجل", auto: "تلقائي",
+  ev: { applied: "طلب", approved: "قبول", rejected: "رفض", suspended: "تعليق", paused: "إيقاف", reinstated: "إعادة", removed: "حذف", warning: "تحذير", late: "تأخير", wrong: "خطأ", unclear: "غير واضح", good: "جيد" },
+  audit: { title: "تدقيق عيّنة", intro: "اطلع عشوائياً على مراجعات أو إجابات حديثة وسجّل صحتها. «خطأ» يعيد المشاركة إلى القائمة ويلغي رصيدها غير المدفوع ويحتسب نقطة سلبية.",
+    good: "صحيح", unclear: "غير واضح", wrong: "خطأ", note: "شرح للمتخصص", empty: "لا شيء للتدقيق.", forum: "مشاركة منتدى", answer: "إجابة استشارة", by: "راجعها", reload: "عيّنة جديدة" },
+  me: {
+    title: "حالتي وملاحظاتي", late: "تأخير", wrong: "مراجعات خاطئة", inWindow: "خلال آخر {d} يوماً", limit: "الحد",
+    approved: "أهليتك مؤكدة.", pending: "طلبك بانتظار دوروا. لا يمكنك المراجعة قبل القبول.",
+    paused: "وصولك موقوف مؤقتاً.", suspended: "وصولك معلق حتى تراجعه دوروا.", removed: "تم سحب صفتك كمتخصص.",
+    feedback: "الملاحظات", none: "لا ملاحظات بعد.", back: "يعود تلقائياً", contact: "إن رأيت أن هناك خطأ فتواصل مع دعم دوروا.",
+    pharm: "صيدلي موثق؛ أهليتك دائمة.",
+  },
+};
+const ALL: Record<Locale, T> = { fa, en, ar };
+export const getQualTexts = (l: Locale) => ALL[l];
